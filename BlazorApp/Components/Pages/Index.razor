@@ -1,0 +1,18 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Sand</PageTitle>
+
+<h1>Sand</h1>
+
+<PixelMap Width=256 Height=256 @ref="matrix"/>
+
+<button @onclick="Generate">Generate</button>
+
+@code {
+  private PixelMap matrix;
+
+  private void Generate() {
+    matrix.Generate();
+  }
+}
