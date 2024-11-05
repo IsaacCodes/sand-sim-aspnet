@@ -1,1 +1,17 @@
-﻿
+﻿h1 {
+    display: flex;
+    justify-content: center; /*horz*/
+    align-items: start; /*vert*/
+}
+
+::deep img {
+    display: flex;
+    justify-content: center; /*horz*/
+    align-items: center; /*vert*/
+}
+
+button {
+    display: flex;
+    justify-content: center; /*horz*/
+    align-items: end; /*vert*/
+}
