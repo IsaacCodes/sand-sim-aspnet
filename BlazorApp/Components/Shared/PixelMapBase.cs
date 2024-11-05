@@ -8,10 +8,13 @@ public class PixelMapBase : ComponentBase {
   public int Width { get; set; }
   [Parameter]
   public int Height { get; set; }
-  [Parameter] 
   public string Source { get; set; }
 
-  private async Task Update(SKBitmap bitmap) {
+  private Timer nextTimer;
+
+  private SKBitmap bitmap;
+
+  private async Task Update() {
     Stream bitmapStream = bitmap.Encode(SKEncodedImageFormat.Png, 100).AsStream();
     Stream outStream = File.Create("wwwroot/images/output.png");
 
@@ -26,16 +29,20 @@ public class PixelMapBase : ComponentBase {
   }
 
   protected override async void OnInitialized() {
-    SKBitmap bitmap = new SKBitmap(Width, Height);
-    
+    bitmap = new SKBitmap(Width, Height);
     Source = "images/output.png";
 
     Console.WriteLine("Init");
-    await Update(bitmap);
+    await Update();
+
+    //nextTimer = new Timer(2000);
+    // Hook up the Elapsed event for the timer. 
+    //nextTimer.Elapsed += Next;
+    //nextTimer.AutoReset = true;
   }
 
   public async Task Generate() {
-    SKBitmap bitmap = new SKBitmap(Width, Height);
+    bitmap = new SKBitmap(Width, Height);
 
     Random random = new Random();
     byte r = (byte) random.Next(0, 256);
@@ -47,7 +54,7 @@ public class PixelMapBase : ComponentBase {
     for(int x = 0; x < Width; x++) {
       for(int y = 0; y < Height; y++) {
 
-        if (x > y) {
+        if (random.Next(0, 100) < 10) {
           bitmap.SetPixel(x, y, fillColor);
         }
 
@@ -55,6 +62,28 @@ public class PixelMapBase : ComponentBase {
     }
 
     Console.WriteLine("Generated");
-    await Update(bitmap);
+    await Update();
+
+    //nextEnabled = true;
+  }
+
+  public async Task Next() {
+    SKColor bg = SKColor.Empty;
+
+    for(int x = 0; x < Width; x++) {
+      for(int y = Height-2; y >= 0; y--) {
+
+        SKColor here = bitmap.GetPixel(x, y);
+        SKColor below = bitmap.GetPixel(x, y+1);
+
+        if(here != bg && below == bg) {
+          bitmap.SetPixel(x, y, bg);
+          bitmap.SetPixel(x, y+1, here);
+        }
+      }
+    }
+
+    await Update();
+
   }
 }

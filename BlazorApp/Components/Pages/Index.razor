@@ -1,13 +1,13 @@
 ﻿@page "/"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(false))
 
 <PageTitle>Sand</PageTitle>
 
-<h1>Sand</h1>
+<div class="MainDiv">
+  <PixelMap Width=600 Height=400 @ref="matrix"/>
 
-<PixelMap Width=256 Height=256 @ref="matrix"/>
-
-<button @onclick="Generate">Generate</button>
+  <button @onclick="Generate">Generate</button>
+</div>
 
 @code {
   private PixelMap matrix;
