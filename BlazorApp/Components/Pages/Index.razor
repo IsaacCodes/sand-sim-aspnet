@@ -12,7 +12,10 @@
 @code {
   private PixelMap matrix;
 
-  private void Generate() {
-    matrix.Generate();
+  private async void Generate() {
+    DateTime startTime = DateTime.Now;
+    await matrix.Generate();
+    DateTime endTime = DateTime.Now;
+    Console.WriteLine($"Generation time: {endTime.Subtract(startTime).Milliseconds} ms");
   }
 }

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components;
-using System.Drawing;
+using SkiaSharp;
 
 namespace BlazorApp.Components.Shared;
 public class PixelMapBase : ComponentBase {
@@ -8,43 +8,53 @@ public class PixelMapBase : ComponentBase {
   public int Width { get; set; }
   [Parameter]
   public int Height { get; set; }
+  [Parameter] 
+  public string Source { get; set; }
 
-  private void Update() {
-    /*
-    bitmap.Save("wwwroot/images/output.png");
-    StateHasChanged();
-    */
+  private async Task Update(SKBitmap bitmap) {
+    Stream bitmapStream = bitmap.Encode(SKEncodedImageFormat.Png, 100).AsStream();
+    Stream outStream = File.Create("wwwroot/images/output.png");
+
+    bitmapStream.CopyTo(outStream);
+    Source = $"images/output.png?Dummy={DateTime.Now}";
+
+    bitmapStream.Close(); outStream.Close();
+    bitmap.Dispose();
+
+    await InvokeAsync(StateHasChanged);
+    Console.WriteLine("Update performed");
   }
 
-  protected override void OnInitialized() {
-    Console.WriteLine("Init");
-
+  protected override async void OnInitialized() {
+    SKBitmap bitmap = new SKBitmap(Width, Height);
     
-    //Bitmap bitmap = new Bitmap(Width, Height);
-    //bitmap.Save("Components/Shared/output.png");
-    //StateHasChanged();
+    Source = "images/output.png";
+
+    Console.WriteLine("Init");
+    await Update(bitmap);
   }
 
-  public void Generate() {
+  public async Task Generate() {
+    SKBitmap bitmap = new SKBitmap(Width, Height);
 
-    /*
-    Bitmap bitmap = new Bitmap(Width, Height);
+    Random random = new Random();
+    byte r = (byte) random.Next(0, 256);
+    byte g = (byte) random.Next(0, 256);
+    byte b = (byte) random.Next(0, 256);
 
+    SKColor fillColor = new SKColor(r, g, b, 255);
 
     for(int x = 0; x < Width; x++) {
       for(int y = 0; y < Height; y++) {
 
         if (x > y) {
-          bitmap.SetPixel(x, y, Color.Red);
+          bitmap.SetPixel(x, y, fillColor);
         }
 
       }
     }
 
-    Console.WriteLine("yoooooooo");
-
-    Update(bitmap);
-    */
-    Console.WriteLine("yoooooooo");
+    Console.WriteLine("Generated");
+    await Update(bitmap);
   }
 }
