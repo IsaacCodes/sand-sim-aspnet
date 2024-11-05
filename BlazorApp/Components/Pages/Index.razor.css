@@ -1,17 +1,20 @@
-﻿h1 {
-    display: flex;
-    justify-content: center; /*horz*/
-    align-items: start; /*vert*/
+﻿.MainDiv ::deep img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    margin-bottom: 20px;
+
+    border-style: dotted;
+    border-width: thick;
+    float: center;
 }
 
-::deep img {
-    display: flex;
-    justify-content: center; /*horz*/
-    align-items: center; /*vert*/
-}
+.MainDiv button {
+    margin: auto;
+    float: center;
+    display: block;
 
-button {
-    display: flex;
-    justify-content: center; /*horz*/
-    align-items: end; /*vert*/
+    background-color: #04AA6D;
+    color: white;
 }
