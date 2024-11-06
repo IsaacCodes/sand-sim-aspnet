@@ -2,4 +2,5 @@
 @rendermode InteractiveServer
 
 <img src="@Source" alt="Failed to Load" draggable="false"
-style="width: @(Width*2)px; height: auto; image-rendering: pixelated;"/>
+@onclick="OnClickCallback"
+style="width: @(Width*Scale)px; height: auto; image-rendering: pixelated;"/>
