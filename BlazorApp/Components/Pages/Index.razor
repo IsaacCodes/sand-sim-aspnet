@@ -4,7 +4,8 @@
 <PageTitle>Sand</PageTitle>
 
 <div class="MainDiv">
-  <PixelMap Width=500 Height=250 Delay=100 @ref="matrix"/>
+  <PixelMap Width=500 Height=250 Delay=100 Scale=2
+  @ref="matrix" OnClickCallback="Click"/>
 
   <button @onclick="Generate">Generate</button>
 </div>
@@ -17,5 +18,9 @@
     await matrix.Generate();
     DateTime endTime = DateTime.Now;
     Console.WriteLine($"Generation time: {endTime.Subtract(startTime).Milliseconds} ms");
+  }
+
+  private void Click(MouseEventArgs args) {
+    matrix.Click(args);
   }
 }
