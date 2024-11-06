@@ -8,11 +8,14 @@ public class PixelMapBase : ComponentBase {
   public int Width { get; set; }
   [Parameter]
   public int Height { get; set; }
+  [Parameter]
+  public int Delay { get; set; }
+
   public string Source { get; set; }
 
-  private Timer nextTimer;
-
   private SKBitmap bitmap;
+  private PeriodicTimer nextTimer;
+  private bool timerStarted = false;
 
   private async Task Update() {
     Stream bitmapStream = bitmap.Encode(SKEncodedImageFormat.Png, 100).AsStream();
@@ -21,24 +24,22 @@ public class PixelMapBase : ComponentBase {
     bitmapStream.CopyTo(outStream);
     Source = $"images/output.png?Dummy={DateTime.Now}";
 
-    bitmapStream.Close(); outStream.Close();
-    bitmap.Dispose();
+    bitmapStream.Close();
+    outStream.Close();
 
     await InvokeAsync(StateHasChanged);
-    Console.WriteLine("Update performed");
+
+    Console.WriteLine("Updated");
   }
 
   protected override async void OnInitialized() {
     bitmap = new SKBitmap(Width, Height);
     Source = "images/output.png";
-
-    Console.WriteLine("Init");
     await Update();
 
-    //nextTimer = new Timer(2000);
-    // Hook up the Elapsed event for the timer. 
-    //nextTimer.Elapsed += Next;
-    //nextTimer.AutoReset = true;
+    nextTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(Delay));
+
+    Console.WriteLine("Initialized");
   }
 
   public async Task Generate() {
@@ -64,15 +65,18 @@ public class PixelMapBase : ComponentBase {
     Console.WriteLine("Generated");
     await Update();
 
-    //nextEnabled = true;
+    if(!timerStarted) {
+      timerStarted = true;
+      NextClock();
+    }
+
   }
 
-  public async Task Next() {
+  private async Task NextBitmap() {
     SKColor bg = SKColor.Empty;
 
     for(int x = 0; x < Width; x++) {
       for(int y = Height-2; y >= 0; y--) {
-
         SKColor here = bitmap.GetPixel(x, y);
         SKColor below = bitmap.GetPixel(x, y+1);
 
@@ -82,8 +86,18 @@ public class PixelMapBase : ComponentBase {
         }
       }
     }
-
     await Update();
+  }
 
+  private async void NextClock() {
+    while (await nextTimer.WaitForNextTickAsync()) {
+      DateTime startTime = DateTime.Now;
+
+      await NextBitmap();
+      await InvokeAsync(StateHasChanged);
+
+      DateTime endTime = DateTime.Now;
+      Console.WriteLine($"Next time: {endTime.Subtract(startTime).Milliseconds} ms");
+    }
   }
 }
