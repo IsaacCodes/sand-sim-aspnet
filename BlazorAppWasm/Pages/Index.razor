@@ -1,5 +1,4 @@
 ﻿@page "/"
-@rendermode @(new InteractiveServerRenderMode(false))
 
 <PageTitle>Sand</PageTitle>
 
@@ -13,14 +12,21 @@
 @code {
   private PixelMap matrix;
 
-  private async void Generate() {
+  private async Task Generate() {
     DateTime startTime = DateTime.Now;
+
     await matrix.Generate();
+    
     DateTime endTime = DateTime.Now;
     Console.WriteLine($"Generation time: {endTime.Subtract(startTime).Milliseconds} ms");
   }
 
   private void Click(MouseEventArgs args) {
+    DateTime startTime = DateTime.Now;
+
     matrix.Click(args);
+
+    DateTime endTime = DateTime.Now;
+    Console.WriteLine($"Generation time: {endTime.Subtract(startTime).Milliseconds} ms");
   }
 }
