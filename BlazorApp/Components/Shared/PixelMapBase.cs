@@ -24,7 +24,6 @@ public class PixelMapBase : ComponentBase {
   private SKCanvas canvas;
   private Random random;
   private PeriodicTimer nextTimer;
-  private bool timerStarted = false;
 
   protected override async void OnInitialized() {
     bitmap = new SKBitmap(Width, Height);
@@ -42,23 +41,31 @@ public class PixelMapBase : ComponentBase {
   }
 
   private async Task Update() {
-    Stream bitmapStream = bitmap.Encode(SKEncodedImageFormat.Png, 100).AsStream();
-    Stream outStream = File.Create("wwwroot/images/output.png");
+    Console.WriteLine("Start update");
 
-    bitmapStream.CopyTo(outStream);
+
+    //error atm. look at https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/using-async-for-file-access
+    //https://stackoverflow.com/questions/11774827/writing-to-a-file-asynchronously
+    Stream bitmapStream = bitmap.Encode(SKEncodedImageFormat.Png, 100).AsStream();
+     outStream = File.OpenRead
+
+    Console.WriteLine("Opened file");
+
+    outStream.
     Source = $"images/output.png?Dummy={DateTime.Now}";
+
+    Console.WriteLine("Copied to file");
 
     bitmapStream.Close();
     outStream.Close();
 
     await InvokeAsync(StateHasChanged);
 
-    //Console.WriteLine("Updated");
+    Console.WriteLine("Updated\n");
   }
 
 
   public async Task Generate() {
-    bitmap = new SKBitmap(Width, Height);
 
     byte r = (byte) random.Next(0, 256);
     byte g = (byte) random.Next(0, 256);
@@ -97,7 +104,7 @@ public class PixelMapBase : ComponentBase {
     await Update();
   }
 
-  private async void NextClock() {
+  private async Task NextClock() {
     while (await nextTimer.WaitForNextTickAsync()) {
       DateTime startTime = DateTime.Now;
 
@@ -111,8 +118,8 @@ public class PixelMapBase : ComponentBase {
 
   public void Click(MouseEventArgs args) {
 
-    float x = (float) args.OffsetX/Scale;
-    float y = (float) RouteEndpoint(args.OffsetY/Scale;
+    float x = (float) Math.Round(args.OffsetX/Scale);
+    float y = (float) Math.Round(args.OffsetY/Scale);
 
     int radius = 3;
 
