@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using SkiaSharp;
 
+
 namespace BlazorAppWasm.Shared;
 public class PixelMapBase : ComponentBase {
 
@@ -27,7 +28,6 @@ public class PixelMapBase : ComponentBase {
 
   protected override async void OnInitialized() {
     bitmap = new SKBitmap(Width, Height);
-    Source = "images/output.png";
     await Update();
 
     canvas = new SKCanvas(bitmap);
@@ -42,13 +42,17 @@ public class PixelMapBase : ComponentBase {
 
   private async Task Update() {
     Stream bitmapStream = bitmap.Encode(SKEncodedImageFormat.Png, 100).AsStream();
-    Stream outStream = File.Create("/images/output.png");
+    
+    //FileStream outStream = new FileStream("/images/output.png", FileMode.Create);
+    //await bitmapStream.CopyToAsync(outStream);
 
-    bitmapStream.CopyTo(outStream);
+    //https://gist.github.com/SteveSandersonMS/ba16f6bb6934842d78c89ab5314f4b56
+    //https://learn.microsoft.com/en-us/aspnet/core/blazor/state-management?view=aspnetcore-8.0&pivots=server
+
     Source = $"/images/output.png?Dummy={DateTime.Now}";
 
     bitmapStream.Close();
-    outStream.Close();
+    //outStream.Close();
 
     await InvokeAsync(StateHasChanged);
 
