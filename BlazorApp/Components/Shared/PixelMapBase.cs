@@ -1,3 +1,5 @@
+using System.Drawing;
+using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using SkiaSharp;
@@ -16,9 +18,15 @@ public class PixelMapBase : ComponentBase {
   [Parameter]
   public int Delay { get; set; }
   [Parameter]
-  public EventCallback<MouseEventArgs> OnClickCallback { get; set; }
+  public EventCallback<MouseEventArgs> OnMouseDownCallback { get; set; }
+  [Parameter]
+  public EventCallback<MouseEventArgs> OnMouseUpCallback { get; set; }
+  [Parameter]
+  public EventCallback<MouseEventArgs> OnMouseMoveCallback { get; set; }
 
   public string Source { get; set; }
+  public bool isClicking;
+  public MouseEventArgs mouseArgs;
 
   private SKBitmap bitmap;
   private SKCanvas canvas;
@@ -41,31 +49,23 @@ public class PixelMapBase : ComponentBase {
   }
 
   private async Task Update() {
-    Console.WriteLine("Start update");
-
-
-    //error atm. look at https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/using-async-for-file-access
-    //https://stackoverflow.com/questions/11774827/writing-to-a-file-asynchronously
     Stream bitmapStream = bitmap.Encode(SKEncodedImageFormat.Png, 100).AsStream();
-     outStream = File.OpenRead
+    FileStream outStream = new FileStream("wwwroot/images/output.png", FileMode.Create, FileAccess.Write, FileShare.Read);
 
-    Console.WriteLine("Opened file");
-
-    outStream.
+    await bitmapStream.CopyToAsync(outStream);
     Source = $"images/output.png?Dummy={DateTime.Now}";
-
-    Console.WriteLine("Copied to file");
 
     bitmapStream.Close();
     outStream.Close();
 
     await InvokeAsync(StateHasChanged);
 
-    Console.WriteLine("Updated\n");
+    //Console.WriteLine("Updated\n");
   }
 
 
   public async Task Generate() {
+    bitmap.Erase(SKColor.Empty);
 
     byte r = (byte) random.Next(0, 256);
     byte g = (byte) random.Next(0, 256);
@@ -88,6 +88,10 @@ public class PixelMapBase : ComponentBase {
   }
 
   private async Task NextBitmap() {
+    if(isClicking) {
+      Click();
+    }
+
     SKColor bg = SKColor.Empty;
 
     for(int x = 0; x < Width; x++) {
@@ -107,25 +111,33 @@ public class PixelMapBase : ComponentBase {
   private async Task NextClock() {
     while (await nextTimer.WaitForNextTickAsync()) {
       DateTime startTime = DateTime.Now;
-
+      
       await NextBitmap();
       await InvokeAsync(StateHasChanged);
 
       DateTime endTime = DateTime.Now;
-      //Console.WriteLine($"Next time: {endTime.Subtract(startTime).Milliseconds} ms");
+      Console.WriteLine($"Next time: {endTime.Subtract(startTime).Milliseconds} ms");
     }
   }
 
-  public void Click(MouseEventArgs args) {
+  public void Click() {
 
-    float x = (float) Math.Round(args.OffsetX/Scale);
-    float y = (float) Math.Round(args.OffsetY/Scale);
+    float x = (float) Math.Round(mouseArgs.OffsetX/Scale);
+    float y = (float) Math.Round(mouseArgs.OffsetY/Scale);
 
     int radius = 3;
+    SKColor color;
+
+    if (mouseArgs.ShiftKey) {
+      color = SKColor.Empty;
+    }
+    else {
+      color = new SKColor(255, 0, 0);
+    }
 
     SKPaint paint = new SKPaint {
       IsAntialias = false,
-      Color = new SKColor(255, 0, 0),
+      Color = color,
       StrokeCap = SKStrokeCap.Round
     };
 
