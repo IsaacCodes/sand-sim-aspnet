@@ -16,7 +16,9 @@ public class PixelMapBase : ComponentBase {
   public int Scale { get; set; }
 
   [Parameter]
-  public int Delay { get; set; }
+  public int NextDelay { get; set; }
+  [Parameter]
+  public int ClickDelay { get; set; }
   [Parameter]
   public EventCallback<MouseEventArgs> OnMouseDownCallback { get; set; }
   [Parameter]
@@ -32,6 +34,7 @@ public class PixelMapBase : ComponentBase {
   private SKCanvas canvas;
   private Random random;
   private PeriodicTimer nextTimer;
+  private PeriodicTimer clickTimer;
 
   protected override async void OnInitialized() {
     bitmap = new SKBitmap(Width, Height);
@@ -40,10 +43,12 @@ public class PixelMapBase : ComponentBase {
 
     canvas = new SKCanvas(bitmap);
 
-    nextTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(Delay));
+    nextTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(NextDelay));
+    clickTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(ClickDelay));
     random = new Random();
 
     NextClock();
+    ClickClock();
 
     Console.WriteLine("Initialized");
   }
@@ -88,10 +93,6 @@ public class PixelMapBase : ComponentBase {
   }
 
   private async Task NextBitmap() {
-    if(isClicking) {
-      Click();
-    }
-
     SKColor bg = SKColor.Empty;
 
     for(int x = 0; x < Width; x++) {
@@ -113,10 +114,17 @@ public class PixelMapBase : ComponentBase {
       DateTime startTime = DateTime.Now;
       
       await NextBitmap();
-      await InvokeAsync(StateHasChanged);
 
       DateTime endTime = DateTime.Now;
       Console.WriteLine($"Next time: {endTime.Subtract(startTime).Milliseconds} ms");
+    }
+  }
+
+  private async Task ClickClock() {
+    while (await clickTimer.WaitForNextTickAsync()) {
+      if(isClicking) {
+      Click();
+      }
     }
   }
 
