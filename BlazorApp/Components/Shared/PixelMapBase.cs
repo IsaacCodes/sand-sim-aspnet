@@ -1,5 +1,3 @@
-using System.Drawing;
-using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using SkiaSharp;
@@ -116,7 +114,7 @@ public class PixelMapBase : ComponentBase {
       await NextBitmap();
 
       DateTime endTime = DateTime.Now;
-      Console.WriteLine($"Next time: {endTime.Subtract(startTime).Milliseconds} ms");
+      //Console.WriteLine($"Next time: {endTime.Subtract(startTime).Milliseconds} ms");
     }
   }
 
@@ -135,9 +133,9 @@ public class PixelMapBase : ComponentBase {
 
     int radius = 3;
     SKColor color;
-
+    
     if (mouseArgs.ShiftKey) {
-      color = SKColor.Empty;
+      color = new SKColor(0, 0, 0);
     }
     else {
       color = new SKColor(255, 0, 0);
@@ -151,6 +149,6 @@ public class PixelMapBase : ComponentBase {
 
     canvas.DrawCircle(x, y, radius, paint);
 
-    Console.WriteLine($"Clicked at: {x}, {y}");
+    //Console.WriteLine($"Clicked at: {x}, {y}");
   }
 }
