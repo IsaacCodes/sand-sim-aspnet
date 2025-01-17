@@ -26,6 +26,7 @@ public class PixelMapBase : ComponentBase {
 
   public string Source { get; set; }
   public bool isClicking;
+  public int clickRadius = 3;
   public MouseEventArgs mouseArgs;
 
   private SKBitmap bitmap;
@@ -56,7 +57,7 @@ public class PixelMapBase : ComponentBase {
     FileStream outStream = new FileStream("wwwroot/images/output.png", FileMode.Create, FileAccess.Write, FileShare.Read);
 
     await bitmapStream.CopyToAsync(outStream);
-    Source = $"images/output.png?Dummy={DateTime.Now}";
+    Source = $"images/output.png?Dummy={DateTime.Now.Ticks}";
 
     bitmapStream.Close();
     outStream.Close();
@@ -91,7 +92,7 @@ public class PixelMapBase : ComponentBase {
   }
 
   private async Task NextBitmap() {
-    SKColor bg = SKColor.Empty;
+    SKColor bg = SKColors.Empty;
 
     for(int x = 0; x < Width; x++) {
       for(int y = Height-2; y >= 0; y--) {
@@ -121,7 +122,7 @@ public class PixelMapBase : ComponentBase {
   private async Task ClickClock() {
     while (await clickTimer.WaitForNextTickAsync()) {
       if(isClicking) {
-      Click();
+        Click();
       }
     }
   }
@@ -131,11 +132,9 @@ public class PixelMapBase : ComponentBase {
     float x = (float) Math.Round(mouseArgs.OffsetX/Scale);
     float y = (float) Math.Round(mouseArgs.OffsetY/Scale);
 
-    int radius = 3;
     SKColor color;
-    
     if (mouseArgs.ShiftKey) {
-      color = new SKColor(0, 0, 0);
+      color = SKColors.Empty;
     }
     else {
       color = new SKColor(255, 0, 0);
@@ -144,10 +143,11 @@ public class PixelMapBase : ComponentBase {
     SKPaint paint = new SKPaint {
       IsAntialias = false,
       Color = color,
-      StrokeCap = SKStrokeCap.Round
+      StrokeCap = SKStrokeCap.Round,
+      BlendMode = SKBlendMode.Src
     };
 
-    canvas.DrawCircle(x, y, radius, paint);
+    canvas.DrawCircle(x, y, clickRadius, paint);
 
     //Console.WriteLine($"Clicked at: {x}, {y}");
   }
