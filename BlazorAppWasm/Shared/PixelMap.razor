@@ -1,5 +1,5 @@
 @inherits PixelMapBase
 
-<img src="@Source" alt="Failed to Load" draggable="false"
-@onclick="OnClickCallback"
+<img id="PixelMap" src="" alt="Failed to Load" draggable="false"
+@onmousedown="OnMouseDownCallback" @onmouseup="OnMouseUpCallback" @onmousemove="OnMouseMoveCallback"
 style="width: @(Width*Scale)px; height: auto; image-rendering: pixelated;"/>

@@ -3,8 +3,8 @@
 <PageTitle>Sand</PageTitle>
 
 <div class="MainDiv">
-  <PixelMap Width=500 Height=250 Delay=100 Scale=2
-  @ref="matrix" OnClickCallback="Click"/>
+  <PixelMap Width=500 Height=250 Scale=2 NextDelay=100 ClickDelay=15
+  @ref="matrix" OnMouseDownCallback="ClickDown" OnMouseUpCallback="ClickUp" OnMouseMoveCallback="Move"/>
 
   <button @onclick="Generate">Generate</button>
 </div>
@@ -18,15 +18,18 @@
     await matrix.Generate();
     
     DateTime endTime = DateTime.Now;
-    Console.WriteLine($"Generation time: {endTime.Subtract(startTime).Milliseconds} ms");
+    //Console.WriteLine($"Generation time: {endTime.Subtract(startTime).Milliseconds} ms");
   }
 
-  private void Click(MouseEventArgs args) {
-    DateTime startTime = DateTime.Now;
+  private void ClickDown(MouseEventArgs args) {
+    matrix.isClicking = true;
+  }
 
-    matrix.Click(args);
+  private void ClickUp(MouseEventArgs args) {
+    matrix.isClicking = false;
+  }
 
-    DateTime endTime = DateTime.Now;
-    Console.WriteLine($"Generation time: {endTime.Subtract(startTime).Milliseconds} ms");
+  private void Move(MouseEventArgs args) {
+    matrix.mouseArgs = args;
   }
 }

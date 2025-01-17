@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using SkiaSharp;
 
 
@@ -10,49 +11,59 @@ public class PixelMapBase : ComponentBase {
   public int Width { get; set; }
   [Parameter]
   public int Height { get; set; }
-
   [Parameter]
   public int Scale { get; set; }
+  [Parameter]
+  public int NextDelay { get; set; }
+  [Parameter]
+  public int ClickDelay { get; set; }
 
   [Parameter]
-  public int Delay { get; set; }
+  public EventCallback<MouseEventArgs> OnMouseDownCallback { get; set; }
   [Parameter]
-  public EventCallback<MouseEventArgs> OnClickCallback { get; set; }
+  public EventCallback<MouseEventArgs> OnMouseUpCallback { get; set; }
+  [Parameter]
+  public EventCallback<MouseEventArgs> OnMouseMoveCallback { get; set; }
 
-  public string Source { get; set; }
+  public bool isClicking;
+  public MouseEventArgs mouseArgs;
 
   private SKBitmap bitmap;
   private SKCanvas canvas;
   private Random random;
   private PeriodicTimer nextTimer;
+  private PeriodicTimer clickTimer;
+
+  [Inject]
+  private IJSRuntime JS { get; set; }
+
+  private IJSObjectReference JSModule;
+
 
   protected override async void OnInitialized() {
+
+    JSModule = await JS.InvokeAsync<IJSObjectReference>("import", "./scripts/imageHandler.js");
+
     bitmap = new SKBitmap(Width, Height);
+    canvas = new SKCanvas(bitmap);
     await Update();
 
-    canvas = new SKCanvas(bitmap);
-
-    nextTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(Delay));
+    nextTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(NextDelay));
+    clickTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(ClickDelay));
     random = new Random();
 
     NextClock();
+    ClickClock();
 
     Console.WriteLine("Initialized");
   }
 
   private async Task Update() {
     Stream bitmapStream = bitmap.Encode(SKEncodedImageFormat.Png, 100).AsStream();
+    DotNetStreamReference streamRef = new DotNetStreamReference(bitmapStream);
     
-    //FileStream outStream = new FileStream("/images/output.png", FileMode.Create);
-    //await bitmapStream.CopyToAsync(outStream);
-
-    //https://gist.github.com/SteveSandersonMS/ba16f6bb6934842d78c89ab5314f4b56
-    //https://learn.microsoft.com/en-us/aspnet/core/blazor/state-management?view=aspnetcore-8.0&pivots=server
-
-    Source = $"/images/output.png?Dummy={DateTime.Now}";
-
+    await JSModule.InvokeVoidAsync("setImage", "PixelMap", streamRef);
     bitmapStream.Close();
-    //outStream.Close();
 
     await InvokeAsync(StateHasChanged);
 
@@ -104,23 +115,38 @@ public class PixelMapBase : ComponentBase {
       DateTime startTime = DateTime.Now;
 
       await NextBitmap();
-      await InvokeAsync(StateHasChanged);
 
       DateTime endTime = DateTime.Now;
-      //Console.WriteLine($"Next time: {endTime.Subtract(startTime).Milliseconds} ms");
+      Console.WriteLine($"Next time: {endTime.Subtract(startTime).Milliseconds} ms");
     }
   }
 
-  public void Click(MouseEventArgs args) {
+  private async Task ClickClock() {
+    while (await clickTimer.WaitForNextTickAsync()) {
+      if(isClicking) {
+        Click();
+      }
+    }
+  }
 
-    float x = (float) Math.Round(args.OffsetX/Scale);
-    float y = (float) Math.Round(args.OffsetY/Scale);
+  public void Click() {
+
+    float x = (float) Math.Round(mouseArgs.OffsetX/Scale);
+    float y = (float) Math.Round(mouseArgs.OffsetY/Scale);
 
     int radius = 3;
+    SKColor color;
+    
+    if (mouseArgs.ShiftKey) {
+      color = SKColor.Empty;
+    }
+    else {
+      color = new SKColor(255, 0, 0);
+    }
 
     SKPaint paint = new SKPaint {
       IsAntialias = false,
-      Color = new SKColor(255, 0, 0),
+      Color = color,
       StrokeCap = SKStrokeCap.Round
     };
 
