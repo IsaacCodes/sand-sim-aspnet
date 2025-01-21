@@ -1,0 +1,20 @@
+﻿.MainDiv ::deep img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    margin-bottom: 20px;
+
+    border-style: dotted;
+    border-width: thick;
+    float: center;
+}
+
+.MainDiv button {
+    margin: auto;
+    float: center;
+    display: block;
+
+    background-color: #04AA6D;
+    color: white;
+}
