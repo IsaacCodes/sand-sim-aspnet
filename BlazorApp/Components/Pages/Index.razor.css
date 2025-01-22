@@ -10,11 +10,23 @@
     float: center;
 }
 
-.MainDiv button {
-    margin: auto;
-    float: center;
-    display: block;
+.InfoBar ul {
+    list-style-type: none;
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+}
 
-    background-color: #04AA6D;
-    color: white;
+.InfoBar li {
+    display: inline-block;
+    text-align: center; 
+    padding: 12px;
+}
+
+.InfoBar button {
+    background-color: lightgray;
+    color: black;
+}
+.InfoBar p {
+    color: black;
 }

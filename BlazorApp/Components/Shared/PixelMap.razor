@@ -1,5 +1,5 @@
 @inherits PixelMapBase
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(false))
 
 <img src="@Source" alt="Failed to Load" draggable="false"
 @onmousedown="OnMouseDownCallback" @onmouseup="OnMouseUpCallback" @onmousemove="OnMouseMoveCallback"
