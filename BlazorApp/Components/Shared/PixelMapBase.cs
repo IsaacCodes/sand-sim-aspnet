@@ -151,4 +151,12 @@ public class PixelMapBase : ComponentBase {
 
     //Console.WriteLine($"Clicked at: {x}, {y}");
   }
+
+  public void Dispose() {
+    nextTimer.Dispose();
+    clickTimer.Dispose();
+    canvas.Dispose();
+    bitmap.Dispose();
+    Console.WriteLine("Disposed");
+  }
 }
