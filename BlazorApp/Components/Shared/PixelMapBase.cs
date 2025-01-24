@@ -24,16 +24,18 @@ public class PixelMapBase : ComponentBase {
   [Parameter]
   public EventCallback<MouseEventArgs> OnMouseMoveCallback { get; set; }
 
+  public MouseEventArgs mouseArgs;
   public string Source { get; set; }
   public bool isClicking;
   public int clickRadius = 3;
-  public MouseEventArgs mouseArgs;
+  public bool gravity = true;
 
   private SKBitmap bitmap;
   private SKCanvas canvas;
   private Random random;
   private PeriodicTimer nextTimer;
   private PeriodicTimer clickTimer;
+  private SKColor bg = SKColor.Empty;
 
   protected override async void OnInitialized() {
     bitmap = new SKBitmap(Width, Height);
@@ -69,7 +71,6 @@ public class PixelMapBase : ComponentBase {
 
 
   public async Task Generate() {
-    bitmap.Erase(SKColor.Empty);
 
     byte r = (byte) random.Next(0, 256);
     byte g = (byte) random.Next(0, 256);
@@ -80,7 +81,7 @@ public class PixelMapBase : ComponentBase {
     for(int x = 0; x < Width; x++) {
       for(int y = 0; y < Height; y++) {
 
-        if (random.Next(0, 100) < 10) {
+        if (random.Next(0, 100) < 10 && bitmap.GetPixel(x, y) == bg) {
           bitmap.SetPixel(x, y, fillColor);
         }
 
@@ -91,8 +92,16 @@ public class PixelMapBase : ComponentBase {
     await Update();
   }
 
+  public void Clear() {
+    bitmap.Erase(bg);
+  }
+
   private async Task NextBitmap() {
-    SKColor bg = SKColors.Empty;
+
+    if (!gravity) {
+      await Update();
+      return;
+    }
 
     for(int x = 0; x < Width; x++) {
       for(int y = Height-2; y >= 0; y--) {
@@ -134,7 +143,7 @@ public class PixelMapBase : ComponentBase {
 
     SKColor color;
     if (mouseArgs.ShiftKey) {
-      color = SKColors.Empty;
+      color = bg;
     }
     else {
       color = new SKColor(255, 0, 0);
@@ -152,13 +161,15 @@ public class PixelMapBase : ComponentBase {
     //Console.WriteLine($"Clicked at: {x}, {y}");
   }
 
-  public void DeepDispose() {
+  public void Dispose() {
     Console.WriteLine("Disposed");
     nextTimer.Dispose();
     nextTimer = null;
     clickTimer.Dispose();
     clickTimer = null;
     canvas.Dispose();
+    canvas = null;
     bitmap.Dispose();
+    bitmap = null;
   }
 }

@@ -13,8 +13,9 @@
     <li><button @onclick="() => ChangeRadius(1)">+</button></li>
     <li><button @onclick="() => ChangeRadius(-1)">-</button></li>
     <li><p>Radius: -</p></li>
+    <li><button @onclick="Freeze">Freeze</button></li>
     <li><button @onclick="Generate">Generate</button></li>
-    <li><button>Freeze</button></li>
+    <li><button @onclick="Clear">Clear</button></li>
   </ul>
 </div>
 
@@ -23,6 +24,14 @@
 
   private async Task Generate() {
     await matrix.Generate();
+  }
+
+  private void Clear() {
+    matrix.Clear();
+  }
+
+  private void Freeze() {
+    matrix.gravity = !matrix.gravity;
   }
 
   private void ChangeRadius(int delta) {
