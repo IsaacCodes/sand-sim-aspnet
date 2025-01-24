@@ -22,12 +22,7 @@
   private PixelMap matrix;
 
   private async Task Generate() {
-    DateTime startTime = DateTime.Now;
-
     await matrix.Generate();
-    
-    DateTime endTime = DateTime.Now;
-    //Console.WriteLine($"Generation time: {endTime.Subtract(startTime).Milliseconds} ms");
   }
 
   private void ChangeRadius(int delta) {
