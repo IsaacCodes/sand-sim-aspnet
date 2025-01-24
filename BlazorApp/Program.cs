@@ -4,7 +4,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents()
+    .AddCircuitOptions(options =>
+    {
+        options.DetailedErrors = true;
+        options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromSeconds(0);
+        options.DisconnectedCircuitMaxRetained = 0;
+    });
 
 var app = builder.Build();
 

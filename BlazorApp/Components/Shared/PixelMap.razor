@@ -5,9 +5,3 @@
 <img src="@Source" alt="Failed to Load" draggable="false"
 @onmousedown="OnMouseDownCallback" @onmouseup="OnMouseUpCallback" @onmousemove="OnMouseMoveCallback"
 style="width: @(Width*Scale)px; height: auto; image-rendering: pixelated;"/>
-
-@code {
-    public void Dispose() {
-        DeepDispose();
-    }
-}
