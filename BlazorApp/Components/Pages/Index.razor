@@ -12,7 +12,7 @@
   <ul>
     <li><button @onclick="() => ChangeRadius(1)">+</button></li>
     <li><button @onclick="() => ChangeRadius(-1)">-</button></li>
-    <li><p>Radius: -</p></li>
+    <li><p>@radiusText</p></li>
     <li><button @onclick="Freeze">Freeze</button></li>
     <li><button @onclick="Generate">Generate</button></li>
     <li><button @onclick="Clear">Clear</button></li>
@@ -21,6 +21,7 @@
 
 @code {
   private PixelMap matrix;
+  private String radiusText = $"Radius: 3";
 
   private async Task Generate() {
     await matrix.Generate();
@@ -35,7 +36,8 @@
   }
 
   private void ChangeRadius(int delta) {
-    matrix.clickRadius = Math.Clamp(matrix.clickRadius + delta, 1, 10);
+    matrix.clickRadius = Math.Clamp(matrix.clickRadius + delta, 1, 9);
+    radiusText = $"Radius: {matrix.clickRadius}";
   }
 
   private void ClickDown(MouseEventArgs args) {

@@ -24,8 +24,9 @@ public class PixelMapBase : ComponentBase {
   [Parameter]
   public EventCallback<MouseEventArgs> OnMouseMoveCallback { get; set; }
 
-  public MouseEventArgs mouseArgs;
   public string Source { get; set; }
+
+  public MouseEventArgs mouseArgs;
   public bool isClicking;
   public int clickRadius = 3;
   public bool gravity = true;
@@ -48,8 +49,8 @@ public class PixelMapBase : ComponentBase {
     clickTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(ClickDelay));
     random = new Random();
 
-    NextClock();
-    ClickClock();
+    Task.Run(NextClock);
+    Task.Run(ClickClock);
 
     Console.WriteLine("Initialized");
   }
