@@ -10,12 +10,20 @@
 
 <div class="InfoBar">
   <ul>
-    <li><button @onclick="() => ChangeRadius(1)">+</button></li>
     <li><button @onclick="() => ChangeRadius(-1)">-</button></li>
+    <li><button @onclick="() => ChangeRadius(1)">+</button></li>
     <li><p>@radiusText</p></li>
     <li><button @onclick="Freeze">Freeze</button></li>
     <li><button @onclick="Generate">Generate</button></li>
     <li><button @onclick="Clear">Clear</button></li>
+  </ul>
+</div>
+<div class="InfoBar">
+  <ul>
+    <li><button @onclick="() => SetParticle(1)" style="background-color: red;">Defualt</button></li>
+    <li><button @onclick="() => SetParticle(2)" style="background-color: gray;">Stone</button></li>
+    <li><button @onclick="() => SetParticle(3)" style="background-color: yellow;">Sand</button></li>
+    <li><button @onclick="() => SetParticle(4)" style="background-color: skyblue;">Water</button></li>
   </ul>
 </div>
 
@@ -38,6 +46,10 @@
   private void ChangeRadius(int delta) {
     matrix.clickRadius = Math.Clamp(matrix.clickRadius + delta, 1, 9);
     radiusText = $"Radius: {matrix.clickRadius}";
+  }
+
+  private void SetParticle(int type) {
+    matrix.particle = type;
   }
 
   private void ClickDown(MouseEventArgs args) {
