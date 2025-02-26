@@ -26,29 +26,49 @@ public class PixelMapBase : ComponentBase {
 
   public string Source { get; set; }
 
-  public MouseEventArgs mouseArgs;
-  public bool isClicking;
-  public int clickRadius = 3;
+  public bool isClicking = false;
   public bool gravity = true;
+  public int clickRadius = 3;
+  public int particle = 1;
+  public MouseEventArgs mouseArgs;
 
   private SKBitmap bitmap;
   private SKCanvas canvas;
   private Random random;
   private PeriodicTimer nextTimer;
   private PeriodicTimer clickTimer;
-  private SKColor bg = SKColor.Empty;
+
+  private enum Particle { bg, defualt, stone, sand, sky };
+  private SKColor[] pColors = { SKColors.Empty, SKColors.Red, SKColors.Gray, SKColors.Yellow, SKColors.SkyBlue };
+  private SKPaint[] pPaints;
+
 
   protected override async void OnInitialized() {
+    //Initializes bitmap and updates image
     bitmap = new SKBitmap(Width, Height);
     Source = "images/output.png";
     await Update();
 
+    //Array of paints created from colors
+    pPaints = new SKPaint[pColors.Length];
+    
+    for(int i = 0; i < pPaints.Length; i++) {
+      pPaints[i] = new SKPaint {
+        IsAntialias = false,
+        Color = pColors[i],
+        StrokeCap = SKStrokeCap.Round,
+        BlendMode = SKBlendMode.Src
+      };
+    }
+
+    //Canvas, timer, and random objects
     canvas = new SKCanvas(bitmap);
 
     nextTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(NextDelay));
     clickTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(ClickDelay));
     random = new Random();
 
+    //Start main loop, ignore warnings
     Task.Run(NextClock);
     Task.Run(ClickClock);
 
@@ -73,17 +93,14 @@ public class PixelMapBase : ComponentBase {
 
   public async Task Generate() {
 
-    byte r = (byte) random.Next(0, 256);
-    byte g = (byte) random.Next(0, 256);
-    byte b = (byte) random.Next(0, 256);
-
-    SKColor fillColor = new SKColor(r, g, b);
+    SKColor bg = pColors[(int) Particle.bg];
+    SKColor fill = pColors[(int) Particle.defualt];
 
     for(int x = 0; x < Width; x++) {
       for(int y = 0; y < Height; y++) {
 
         if (random.Next(0, 100) < 10 && bitmap.GetPixel(x, y) == bg) {
-          bitmap.SetPixel(x, y, fillColor);
+          bitmap.SetPixel(x, y, fill);
         }
 
       }
@@ -94,7 +111,7 @@ public class PixelMapBase : ComponentBase {
   }
 
   public void Clear() {
-    bitmap.Erase(bg);
+    bitmap.Erase(pColors[(int) Particle.bg]);
   }
 
   private async Task NextBitmap() {
@@ -103,6 +120,8 @@ public class PixelMapBase : ComponentBase {
       await Update();
       return;
     }
+
+    SKColor bg = pColors[(int) Particle.bg];
 
     for(int x = 0; x < Width; x++) {
       for(int y = Height-2; y >= 0; y--) {
@@ -142,20 +161,13 @@ public class PixelMapBase : ComponentBase {
     float x = (float) Math.Round(mouseArgs.OffsetX/Scale);
     float y = (float) Math.Round(mouseArgs.OffsetY/Scale);
 
-    SKColor color;
+    SKPaint paint;
     if (mouseArgs.ShiftKey) {
-      color = bg;
+      paint = pPaints[(int) Particle.bg];
     }
     else {
-      color = new SKColor(255, 0, 0);
+      paint = pPaints[particle];
     }
-
-    SKPaint paint = new SKPaint {
-      IsAntialias = false,
-      Color = color,
-      StrokeCap = SKStrokeCap.Round,
-      BlendMode = SKBlendMode.Src
-    };
 
     canvas.DrawCircle(x, y, clickRadius, paint);
 
