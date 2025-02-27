@@ -42,7 +42,7 @@ public class PixelMapBase : ComponentBase {
   private SKColor[] pColors = { SKColors.Empty, SKColors.Red, SKColors.Gray, SKColors.Yellow, SKColors.SkyBlue };
   private SKPaint[] pPaints;
 
-
+  //Initalization function on start up
   protected override async void OnInitialized() {
     //Initializes bitmap and updates image
     bitmap = new SKBitmap(Width, Height);
@@ -75,6 +75,7 @@ public class PixelMapBase : ComponentBase {
     Console.WriteLine("Initialized");
   }
 
+  //Updates the image using the bitmap
   private async Task Update() {
     Stream bitmapStream = bitmap.Encode(SKEncodedImageFormat.Png, 100).AsStream();
     FileStream outStream = new FileStream("wwwroot/images/output.png", FileMode.Create, FileAccess.Write, FileShare.Read);
@@ -86,15 +87,14 @@ public class PixelMapBase : ComponentBase {
     outStream.Close();
 
     await InvokeAsync(StateHasChanged);
-
-    //Console.WriteLine("Updated\n");
   }
 
 
+  //Generates a flurry of current particles on user call
   public async Task Generate() {
 
     SKColor bg = pColors[(int) Particle.bg];
-    SKColor fill = pColors[(int) Particle.defualt];
+    SKColor fill = pColors[particle];
 
     for(int x = 0; x < Width; x++) {
       for(int y = 0; y < Height; y++) {
@@ -106,14 +106,15 @@ public class PixelMapBase : ComponentBase {
       }
     }
 
-    //Console.WriteLine("Generated");
     await Update();
   }
 
+  //Clears the screen upon user call
   public void Clear() {
     bitmap.Erase(pColors[(int) Particle.bg]);
   }
 
+  //Generates the next bitmap state as particles undergo gravity
   private async Task NextBitmap() {
 
     if (!gravity) {
@@ -125,9 +126,13 @@ public class PixelMapBase : ComponentBase {
 
     for(int x = 0; x < Width; x++) {
       for(int y = Height-2; y >= 0; y--) {
-        SKColor here = bitmap.GetPixel(x, y);
-        SKColor below = bitmap.GetPixel(x, y+1);
 
+        //Handles non-moving stone particles
+        SKColor here = bitmap.GetPixel(x, y);
+        if (here == pColors[(int) Particle.stone]) continue;
+
+        //Handles all other standard gravity particles
+        SKColor below = bitmap.GetPixel(x, y+1);
         if(here != bg && below == bg) {
           bitmap.SetPixel(x, y, bg);
           bitmap.SetPixel(x, y+1, here);
@@ -137,25 +142,7 @@ public class PixelMapBase : ComponentBase {
     await Update();
   }
 
-  private async Task NextClock() {
-    while (await nextTimer.WaitForNextTickAsync()) {
-      DateTime startTime = DateTime.Now;
-      
-      await NextBitmap();
-
-      DateTime endTime = DateTime.Now;
-      //Console.WriteLine($"Next time: {endTime.Subtract(startTime).Milliseconds} ms");
-    }
-  }
-
-  private async Task ClickClock() {
-    while (await clickTimer.WaitForNextTickAsync()) {
-      if(isClicking) {
-        Click();
-      }
-    }
-  }
-
+  //Creates a circle at the given location using the current particle paint
   public void Click() {
 
     float x = (float) Math.Round(mouseArgs.OffsetX/Scale);
@@ -170,12 +157,28 @@ public class PixelMapBase : ComponentBase {
     }
 
     canvas.DrawCircle(x, y, clickRadius, paint);
-
-    //Console.WriteLine($"Clicked at: {x}, {y}");
   }
 
+
+  //Periodically runs next bitmap updates
+  private async Task NextClock() {
+    while (await nextTimer.WaitForNextTickAsync()) {
+      await NextBitmap();
+    }
+  }
+
+  //Checks periodically for clicks from the user
+  private async Task ClickClock() {
+    while (await clickTimer.WaitForNextTickAsync()) {
+      if(isClicking) {
+        Click();
+      }
+    }
+  }
+
+
+  //Properly disposes objects like timers to avoid issues on reload
   public void Dispose() {
-    Console.WriteLine("Disposed");
     nextTimer.Dispose();
     nextTimer = null;
     clickTimer.Dispose();
@@ -184,5 +187,7 @@ public class PixelMapBase : ComponentBase {
     canvas = null;
     bitmap.Dispose();
     bitmap = null;
+
+    Console.WriteLine("Disposed");
   }
 }
