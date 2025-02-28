@@ -39,7 +39,7 @@ public class PixelMapBase : ComponentBase {
   private PeriodicTimer clickTimer;
 
   private enum Particle { bg, defualt, stone, sand, sky };
-  private SKColor[] pColors = { SKColors.Empty, SKColors.Red, SKColors.Gray, SKColors.Yellow, SKColors.SkyBlue };
+  private SKColor[] pColors = { SKColors.Empty, SKColors.Red, SKColors.Gray, new SKColor(250, 200, 100), SKColors.SkyBlue };
   private SKPaint[] pPaints;
 
   //Initalization function on start up
@@ -123,20 +123,52 @@ public class PixelMapBase : ComponentBase {
     }
 
     SKColor bg = pColors[(int) Particle.bg];
+    SKColor stone = pColors[(int) Particle.stone];
+    SKColor sand = pColors[(int) Particle.sand];
 
     for(int x = 0; x < Width; x++) {
       for(int y = Height-2; y >= 0; y--) {
 
-        //Handles non-moving stone particles
+        //Handles non-moving stone and background particles
         SKColor here = bitmap.GetPixel(x, y);
-        if (here == pColors[(int) Particle.stone]) continue;
+        if (here == stone || here == bg) continue;
 
-        //Handles all other standard gravity particles
+        //Handles all standard particle gravity
         SKColor below = bitmap.GetPixel(x, y+1);
-        if(here != bg && below == bg) {
+        if(below == bg) {
           bitmap.SetPixel(x, y, bg);
           bitmap.SetPixel(x, y+1, here);
+          continue;
         }
+
+        //Handles left right movement for sand particles
+        if (here == sand) {
+          int direction = random.Next(0, 2);
+          SKColor left = bitmap.GetPixel(x-1, y+1);
+          SKColor right = bitmap.GetPixel(x+1, y+1);
+
+          if (direction == 0 && left == bg) {
+            bitmap.SetPixel(x, y, bg);
+            bitmap.SetPixel(x-1, y+1, here);
+            continue;
+          } 
+          else if (direction == 1 && right == bg) {
+            bitmap.SetPixel(x, y, bg);
+            bitmap.SetPixel(x+1, y+1, here);
+            continue;
+          }
+          else if (left == bg) {
+            bitmap.SetPixel(x, y, bg);
+            bitmap.SetPixel(x-1, y+1, here);
+            continue;
+          } 
+          else if (right == bg) {
+            bitmap.SetPixel(x, y, bg);
+            bitmap.SetPixel(x+1, y+1, here);
+            continue;
+          }
+        }
+
       }
     }
     await Update();
