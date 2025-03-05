@@ -143,26 +143,28 @@ public class PixelMapBase : ComponentBase {
 
         //Handles left right movement for sand particles
         if (here == sand) {
-          int direction = random.Next(0, 2);
-          SKColor left = bitmap.GetPixel(x-1, y+1);
-          SKColor right = bitmap.GetPixel(x+1, y+1);
 
-          if (direction == 0 && left == bg) {
+          bool preferLeft = random.Next(0, 2) == 0;
+          bool canLeft = 0 <= x-1 && x-1 < Width && bitmap.GetPixel(x-1, y+1) == bg;
+          bool canRight = 0 <= x+1 && x+1 < Width && bitmap.GetPixel(x+1, y+1) == bg;
+
+
+          if (preferLeft && canLeft) {
             bitmap.SetPixel(x, y, bg);
             bitmap.SetPixel(x-1, y+1, here);
             continue;
           } 
-          else if (direction == 1 && right == bg) {
+          else if (!preferLeft && canRight) {
             bitmap.SetPixel(x, y, bg);
             bitmap.SetPixel(x+1, y+1, here);
             continue;
           }
-          else if (left == bg) {
+          else if (canLeft) {
             bitmap.SetPixel(x, y, bg);
             bitmap.SetPixel(x-1, y+1, here);
             continue;
           } 
-          else if (right == bg) {
+          else if (canRight) {
             bitmap.SetPixel(x, y, bg);
             bitmap.SetPixel(x+1, y+1, here);
             continue;
