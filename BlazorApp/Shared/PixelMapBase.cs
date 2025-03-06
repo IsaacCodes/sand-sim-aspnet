@@ -40,7 +40,7 @@ public class PixelMapBase : ComponentBase {
   private PeriodicTimer clickTimer;
 
   private enum Particle { bg, defualt, stone, sand, sky };
-  private SKColor[] pColors = { SKColors.Empty, SKColors.Red, SKColors.Gray, new SKColor(250, 200, 100), SKColors.SkyBlue };
+  private SKColor[] pColors = { SKColors.Empty, new SKColor(200, 240, 240), SKColors.Gray, new SKColor(250, 200, 100), SKColors.SkyBlue };
   private SKPaint[] pPaints;
 
   [Inject]
