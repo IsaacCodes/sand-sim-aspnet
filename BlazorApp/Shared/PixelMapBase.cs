@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using SkiaSharp;
 
-namespace BlazorApp.Components.Shared;
+namespace BlazorApp.Shared;
 public class PixelMapBase : ComponentBase {
 
   [Parameter]
@@ -42,11 +43,18 @@ public class PixelMapBase : ComponentBase {
   private SKColor[] pColors = { SKColors.Empty, SKColors.Red, SKColors.Gray, new SKColor(250, 200, 100), SKColors.SkyBlue };
   private SKPaint[] pPaints;
 
+  [Inject]
+  private IJSRuntime JS { get; set; }
+  private IJSObjectReference JSModule;
+
   //Initalization function on start up
   protected override async void OnInitialized() {
+    //JS interop
+    JSModule = await JS.InvokeAsync<IJSObjectReference>("import", "./scripts/imageHandler.js");
+
     //Initializes bitmap and updates image
     bitmap = new SKBitmap(Width, Height);
-    Source = "images/output.png";
+    canvas = new SKCanvas(bitmap);
     await Update();
 
     //Array of paints created from colors
@@ -61,8 +69,7 @@ public class PixelMapBase : ComponentBase {
       };
     }
 
-    //Canvas, timer, and random objects
-    canvas = new SKCanvas(bitmap);
+    //Timers and random objects
 
     nextTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(NextDelay));
     clickTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(ClickDelay));
@@ -78,13 +85,10 @@ public class PixelMapBase : ComponentBase {
   //Updates the image using the bitmap
   private async Task Update() {
     Stream bitmapStream = bitmap.Encode(SKEncodedImageFormat.Png, 100).AsStream();
-    FileStream outStream = new FileStream("wwwroot/images/output.png", FileMode.Create, FileAccess.Write, FileShare.Read);
+    DotNetStreamReference streamRef = new DotNetStreamReference(bitmapStream);
 
-    await bitmapStream.CopyToAsync(outStream);
-    Source = $"images/output.png?Dummy={DateTime.Now.Ticks}";
-
+    await JSModule.InvokeVoidAsync("setImage", "PixelMap", streamRef);
     bitmapStream.Close();
-    outStream.Close();
 
     await InvokeAsync(StateHasChanged);
   }
@@ -143,26 +147,28 @@ public class PixelMapBase : ComponentBase {
 
         //Handles left right movement for sand particles
         if (here == sand) {
-          int direction = random.Next(0, 2);
-          SKColor left = bitmap.GetPixel(x-1, y+1);
-          SKColor right = bitmap.GetPixel(x+1, y+1);
 
-          if (direction == 0 && left == bg) {
+          bool preferLeft = random.Next(0, 2) == 0;
+          bool canLeft = 0 <= x-1 && x-1 < Width && bitmap.GetPixel(x-1, y+1) == bg;
+          bool canRight = 0 <= x+1 && x+1 < Width && bitmap.GetPixel(x+1, y+1) == bg;
+
+
+          if (preferLeft && canLeft) {
             bitmap.SetPixel(x, y, bg);
             bitmap.SetPixel(x-1, y+1, here);
             continue;
           } 
-          else if (direction == 1 && right == bg) {
+          else if (!preferLeft && canRight) {
             bitmap.SetPixel(x, y, bg);
             bitmap.SetPixel(x+1, y+1, here);
             continue;
           }
-          else if (left == bg) {
+          else if (canLeft) {
             bitmap.SetPixel(x, y, bg);
             bitmap.SetPixel(x-1, y+1, here);
             continue;
           } 
-          else if (right == bg) {
+          else if (canRight) {
             bitmap.SetPixel(x, y, bg);
             bitmap.SetPixel(x+1, y+1, here);
             continue;
