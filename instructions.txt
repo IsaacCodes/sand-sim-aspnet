@@ -1,5 +1,5 @@
 For AOT compliation, run
 
-cd BlazorApp
+cd BlazorAppWasm
 dotnet publish -c Release
 dotnet serve -d bin/Release/net8.0/publish/wwwroot

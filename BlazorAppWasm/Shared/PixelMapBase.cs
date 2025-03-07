@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using SkiaSharp;
 
-namespace BlazorApp.Shared;
+namespace BlazorAppWasm.Shared;
 public class PixelMapBase : ComponentBase {
 
   [Parameter]
