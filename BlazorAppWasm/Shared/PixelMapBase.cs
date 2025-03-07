@@ -103,7 +103,7 @@ public class PixelMapBase : ComponentBase {
     for(int x = 0; x < Width; x++) {
       for(int y = 0; y < Height; y++) {
 
-        if (random.Next(0, 100) < 10 && bitmap.GetPixel(x, y) == bg) {
+        if (random.Next(0, 100) < 7 && bitmap.GetPixel(x, y) == bg) {
           bitmap.SetPixel(x, y, fill);
         }
 
