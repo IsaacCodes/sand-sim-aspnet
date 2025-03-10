@@ -1,8 +1,9 @@
 For AOT compliation, run
 
 dotnet publish BlazorAppWasm -c Release -o host
-dotnet serve -d host
+dotnet serve -d host/wwwroot
 
-For github pages, run #broken atm
+For github pages, run 
+#Broken atm
 
 .github/static.yml
