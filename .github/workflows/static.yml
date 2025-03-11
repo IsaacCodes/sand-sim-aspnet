@@ -1,7 +1,7 @@
 # Simple workflow for deploying static content to GitHub Pages
 name: Deploy static content to Pages
 env:
-  PUBLISH_DIR: host/wwwroot
+  PUBLISH_DIR: website/wwwroot
 
 on:
   # Runs on pushes targeting the default branch for the app's folder path
@@ -45,7 +45,7 @@ jobs:
           dotnet-version: '8.0'
 
       - name: Publish app
-        run: dotnet publish BlazorAppWasm -c Release -o host
+        run: dotnet workload install wasm-tools && dotnet workload restore && dotnet publish BlazorAppWasm -c Release -o host
 
       - name: Rewrite base href
         uses: SteveSandersonMS/ghaction-rewrite-base-href@v1
