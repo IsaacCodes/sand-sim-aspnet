@@ -45,7 +45,7 @@ jobs:
           dotnet-version: '8.0'
 
       - name: Publish app
-        run: dotnet workload install wasm-tools && dotnet workload restore && dotnet publish BlazorAppWasm -c Release -o host
+        run: dotnet workload restore && dotnet publish BlazorAppWasm -c Release -o website
 
       - name: Rewrite base href
         uses: SteveSandersonMS/ghaction-rewrite-base-href@v1

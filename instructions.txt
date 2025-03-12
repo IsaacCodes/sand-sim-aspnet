@@ -1,9 +1,9 @@
 For AOT compliation, run
 
-dotnet publish BlazorAppWasm -c Release -o host
-dotnet serve -d host/wwwroot
+dotnet publish BlazorAppWasm -c Release -o website
+dotnet serve --directory website/wwwroot
 
 For github pages, run 
-#Broken atm
 
 .github/static.yml
+https://github.com/IsaacCodes/sand-sim-aspnet/deployments
