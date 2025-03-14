@@ -51,7 +51,7 @@ jobs:
         uses: SteveSandersonMS/ghaction-rewrite-base-href@v1
         with:
           html_path: ${{ env.PUBLISH_DIR }}/index.html
-          base_href: /blazor-samples/
+          base_href: /sand-sim-aspnet/
         
       - name: Setup Pages
         uses: actions/configure-pages@v5
