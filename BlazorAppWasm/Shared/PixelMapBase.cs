@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -29,6 +30,7 @@ public class PixelMapBase : ComponentBase {
 
   public bool isClicking = false;
   public bool gravity = true;
+  public int gravityDirection = 1;
   public int clickRadius = 3;
   public int particle = 1;
   public MouseEventArgs mouseArgs;
@@ -130,18 +132,21 @@ public class PixelMapBase : ComponentBase {
     SKColor stone = pColors[(int) Particle.stone];
     SKColor sand = pColors[(int) Particle.sand];
 
+    int startY = (gravityDirection == 1) ? Height-2 : 1;
+    bool hitFloor(int y) { return (gravityDirection == 1) ? y >= 0 : y <= Height-1; }
+
     for(int x = 0; x < Width; x++) {
-      for(int y = Height-2; y >= 0; y--) {
+      for(int y = startY; hitFloor(y); y -= gravityDirection) {
 
         //Handles non-moving stone and background particles
         SKColor here = bitmap.GetPixel(x, y);
         if (here == stone || here == bg) continue;
 
         //Handles all standard particle gravity
-        SKColor below = bitmap.GetPixel(x, y+1);
+        SKColor below = bitmap.GetPixel(x, y+gravityDirection);
         if(below == bg) {
           bitmap.SetPixel(x, y, bg);
-          bitmap.SetPixel(x, y+1, here);
+          bitmap.SetPixel(x, y+gravityDirection, here);
           continue;
         }
 
@@ -149,28 +154,28 @@ public class PixelMapBase : ComponentBase {
         if (here == sand) {
 
           bool preferLeft = random.Next(0, 2) == 0;
-          bool canLeft = 0 <= x-1 && x-1 < Width && bitmap.GetPixel(x-1, y+1) == bg;
-          bool canRight = 0 <= x+1 && x+1 < Width && bitmap.GetPixel(x+1, y+1) == bg;
+          bool canLeft = 0 <= x-1 && x-1 < Width && bitmap.GetPixel(x-1, y+gravityDirection) == bg;
+          bool canRight = 0 <= x+1 && x+1 < Width && bitmap.GetPixel(x+1, y+gravityDirection) == bg;
 
 
           if (preferLeft && canLeft) {
             bitmap.SetPixel(x, y, bg);
-            bitmap.SetPixel(x-1, y+1, here);
+            bitmap.SetPixel(x-1, y+gravityDirection, here);
             continue;
           } 
           else if (!preferLeft && canRight) {
             bitmap.SetPixel(x, y, bg);
-            bitmap.SetPixel(x+1, y+1, here);
+            bitmap.SetPixel(x+1, y+gravityDirection, here);
             continue;
           }
           else if (canLeft) {
             bitmap.SetPixel(x, y, bg);
-            bitmap.SetPixel(x-1, y+1, here);
+            bitmap.SetPixel(x-1, y+gravityDirection, here);
             continue;
           } 
           else if (canRight) {
             bitmap.SetPixel(x, y, bg);
-            bitmap.SetPixel(x+1, y+1, here);
+            bitmap.SetPixel(x+1, y+gravityDirection, here);
             continue;
           }
         }
