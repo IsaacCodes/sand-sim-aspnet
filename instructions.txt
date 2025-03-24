@@ -1,9 +1,10 @@
-For AOT compliation, run
+For localhost AOT compliation:
 
 dotnet publish BlazorAppWasm -c Release -o website
 dotnet serve --directory website/wwwroot
 
-For github pages, run 
+
+For github pages: 
 
 .github/static.yml
-https://github.com/IsaacCodes/sand-sim-aspnet/deployments
+https://github.com/IsaacCodes/particle-sim-aspnet/deployments

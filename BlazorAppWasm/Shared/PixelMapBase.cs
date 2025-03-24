@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -41,7 +42,7 @@ public class PixelMapBase : ComponentBase {
   private PeriodicTimer nextTimer;
   private PeriodicTimer clickTimer;
 
-  private enum Particle { bg, defualt, stone, sand, sky };
+  private enum Particle { bg, snow, stone, sand, water };
   private SKColor[] pColors = { SKColors.Empty, new SKColor(200, 240, 240), SKColors.Gray, new SKColor(250, 200, 100), SKColors.SkyBlue };
   private SKPaint[] pPaints;
 
@@ -131,6 +132,7 @@ public class PixelMapBase : ComponentBase {
     SKColor bg = pColors[(int) Particle.bg];
     SKColor stone = pColors[(int) Particle.stone];
     SKColor sand = pColors[(int) Particle.sand];
+    SKColor water = pColors[(int) Particle.water];
 
     int startY = (gravityDirection == 1) ? Height-2 : 1;
     bool hitFloor(int y) { return (gravityDirection == 1) ? y >= 0 : y <= Height-1; }
@@ -158,25 +160,48 @@ public class PixelMapBase : ComponentBase {
           bool canRight = 0 <= x+1 && x+1 < Width && bitmap.GetPixel(x+1, y+gravityDirection) == bg;
 
 
-          if (preferLeft && canLeft) {
+          if ((preferLeft || !canRight) && canLeft) {
             bitmap.SetPixel(x, y, bg);
             bitmap.SetPixel(x-1, y+gravityDirection, here);
-            continue;
-          } 
-          else if (!preferLeft && canRight) {
-            bitmap.SetPixel(x, y, bg);
-            bitmap.SetPixel(x+1, y+gravityDirection, here);
-            continue;
-          }
-          else if (canLeft) {
-            bitmap.SetPixel(x, y, bg);
-            bitmap.SetPixel(x-1, y+gravityDirection, here);
-            continue;
           } 
           else if (canRight) {
             bitmap.SetPixel(x, y, bg);
             bitmap.SetPixel(x+1, y+gravityDirection, here);
-            continue;
+          }
+        }
+
+        else if (here == water) {
+
+          bool preferLeft = random.Next(0, 2) == 0;
+
+          bool canLeft = false, canRight = false;
+          bool continueLeft = true, continueRight = true;
+
+          int dx = 0;
+
+          while (!canLeft && !canRight && (continueLeft || continueRight)) {
+
+            dx += 1;
+
+            if (continueLeft = continueLeft && 0 <= x-dx-1 && x-dx-1 < Width && bitmap.GetPixel(x-dx, y+gravityDirection) == water) {
+              canLeft = bitmap.GetPixel(x-dx-1, y+gravityDirection) == bg;
+            }
+
+            if (continueRight = continueRight && 0 <= x+dx+1 && x+dx+1 < Width && bitmap.GetPixel(x+dx, y+gravityDirection) == water) {
+              canRight = bitmap.GetPixel(x+dx+1, y+gravityDirection) == bg;
+            }
+          }
+
+          Console.WriteLine($"{canLeft}, {canRight}, {dx}");
+
+
+          if ((preferLeft || !canRight) && canLeft) {
+            bitmap.SetPixel(x, y, bg);
+            bitmap.SetPixel(x-dx-1, y+gravityDirection, here);
+          } 
+          else if (canRight) {
+            bitmap.SetPixel(x, y, bg);
+            bitmap.SetPixel(x+dx+1, y+gravityDirection, here);
           }
         }
 
