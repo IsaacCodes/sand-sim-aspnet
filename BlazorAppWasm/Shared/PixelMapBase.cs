@@ -121,6 +121,22 @@ public class PixelMapBase : ComponentBase {
     bitmap.Erase(pColors[(int) Particle.bg]);
   }
 
+  //Clears the screen of a certain particle type upon user call
+  public void ClearParticle(int type) {
+
+    SKColor toClear = pColors[type];
+
+    for(int x = 0; x < Width; x++) {
+      for(int y = 0; y < Height; y++) {
+
+        if(bitmap.GetPixel(x, y) == toClear) {
+          bitmap.SetPixel(x, y, pColors[(int) Particle.bg]);
+        }
+
+      }
+    }
+  }
+
   //Generates the next bitmap state as particles undergo gravity
   private async Task NextBitmap() {
 
@@ -191,9 +207,6 @@ public class PixelMapBase : ComponentBase {
               canRight = bitmap.GetPixel(x+dx+1, y+gravityDirection) == bg;
             }
           }
-
-          Console.WriteLine($"{canLeft}, {canRight}, {dx}");
-
 
           if ((preferLeft || !canRight) && canLeft) {
             bitmap.SetPixel(x, y, bg);

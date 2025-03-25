@@ -26,6 +26,14 @@
     <li><button @onclick="() => SetParticle(4)" style="background-color: skyblue;">Water</button></li>
   </ul>
 </div>
+<div class="InfoBar two">
+  <ul>
+    <li><button @onclick="() => ClearParticle(1)" style="background-color: red;">x</button></li>
+    <li><button @onclick="() => ClearParticle(2)" style="background-color: red;">x</button></li>
+    <li><button @onclick="() => ClearParticle(3)" style="background-color: red;">x</button></li>
+    <li><button @onclick="() => ClearParticle(4)" style="background-color: red;">x</button></li>
+  </ul>
+</div>
 
 @code {
   private PixelMap matrix;
@@ -60,6 +68,10 @@
 
   private void SetParticle(int type) {
     matrix.particle = type;
+  }
+
+  private void ClearParticle(int type) {
+    matrix.ClearParticle(type);
   }
 
   private void ClickDown(MouseEventArgs args) {
