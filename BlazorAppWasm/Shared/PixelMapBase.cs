@@ -34,7 +34,7 @@ public class PixelMapBase : ComponentBase {
   public int gravityDirection = 1;
   public int clickRadius = 3;
   public int particle = 1;
-  public MouseEventArgs mouseArgs;
+  public List<MouseEventArgs> mouseArgsList = new List<MouseEventArgs>();
 
   private SKBitmap bitmap;
   private SKCanvas canvas;
@@ -106,7 +106,7 @@ public class PixelMapBase : ComponentBase {
     for(int x = 0; x < Width; x++) {
       for(int y = 0; y < Height; y++) {
 
-        if (random.Next(0, 100) < 7 && bitmap.GetPixel(x, y) == bg) {
+        if (random.Next(0, 100) < 5 && bitmap.GetPixel(x, y) == bg) {
           bitmap.SetPixel(x, y, fill);
         }
 
@@ -129,7 +129,7 @@ public class PixelMapBase : ComponentBase {
     for(int x = 0; x < Width; x++) {
       for(int y = 0; y < Height; y++) {
 
-        if(bitmap.GetPixel(x, y) == toClear) {
+        if (bitmap.GetPixel(x, y) == toClear) {
           bitmap.SetPixel(x, y, pColors[(int) Particle.bg]);
         }
 
@@ -152,9 +152,9 @@ public class PixelMapBase : ComponentBase {
 
     int startY = (gravityDirection == 1) ? Height-2 : 1;
     bool hitFloor(int y) { return (gravityDirection == 1) ? y >= 0 : y <= Height-1; }
-
-    for(int x = 0; x < Width; x++) {
-      for(int y = startY; hitFloor(y); y -= gravityDirection) {
+    
+    for(int y = startY; hitFloor(y); y -= gravityDirection) {
+      for(int x = 0; x < Width; x++) {
 
         //Handles non-moving stone and background particles
         SKColor here = bitmap.GetPixel(x, y);
@@ -162,7 +162,7 @@ public class PixelMapBase : ComponentBase {
 
         //Handles all standard particle gravity
         SKColor below = bitmap.GetPixel(x, y+gravityDirection);
-        if(below == bg) {
+        if (below == bg) {
           bitmap.SetPixel(x, y, bg);
           bitmap.SetPixel(x, y+gravityDirection, here);
           continue;
@@ -187,6 +187,20 @@ public class PixelMapBase : ComponentBase {
         }
 
         else if (here == water) {
+
+          //Commented code is broken :(
+          /* 
+          int waterStart = x;
+          HashSet<int> positions = new HashSet<int>();
+
+          while(0 < x && x < Width-1 && bitmap.GetPixel(x+1, y) == water && bitmap.GetPixel(x+1, y+gravityDirection) != bg) {
+            x++;
+          }
+          Console.WriteLine(x.ToString() + y.ToString());
+
+          positions.Add(waterStart);
+          positions.Add(x);
+          */
 
           bool preferLeft = random.Next(0, 2) == 0;
 
@@ -217,7 +231,6 @@ public class PixelMapBase : ComponentBase {
             bitmap.SetPixel(x+dx+1, y+gravityDirection, here);
           }
         }
-
       }
     }
     await Update();
@@ -226,18 +239,25 @@ public class PixelMapBase : ComponentBase {
   //Creates a circle at the given location using the current particle paint
   public void Click() {
 
-    float x = (float) Math.Round(mouseArgs.OffsetX/Scale);
-    float y = (float) Math.Round(mouseArgs.OffsetY/Scale);
+    if (mouseArgsList.Count == 0) return;
 
-    SKPaint paint;
-    if (mouseArgs.ShiftKey) {
-      paint = pPaints[(int) Particle.bg];
-    }
-    else {
-      paint = pPaints[particle];
+    float startX = (float) Math.Round(mouseArgsList[0].OffsetX/Scale);
+    float startY = (float) Math.Round(mouseArgsList[0].OffsetY/Scale);
+
+    foreach (MouseEventArgs mouseArgs in mouseArgsList) {
+
+      float x = (float) Math.Round(mouseArgs.OffsetX/Scale);
+      float y = (float) Math.Round(mouseArgs.OffsetY/Scale);
+
+      SKPaint paint = mouseArgs.ShiftKey ? pPaints[(int) Particle.bg] : pPaints[particle];
+      paint.StrokeWidth = 2*clickRadius;
+
+      canvas.DrawLine(startX, startY, x, y, paint);
+      
+      startX = x; startY = y;
     }
 
-    canvas.DrawCircle(x, y, clickRadius, paint);
+    mouseArgsList.RemoveRange(0, mouseArgsList.Count - 1);
   }
 
 
@@ -251,7 +271,7 @@ public class PixelMapBase : ComponentBase {
   //Checks periodically for clicks from the user
   private async Task ClickClock() {
     while (await clickTimer.WaitForNextTickAsync()) {
-      if(isClicking) {
+      if (isClicking) {
         Click();
       }
     }

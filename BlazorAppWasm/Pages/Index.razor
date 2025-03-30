@@ -3,7 +3,7 @@
 <PageTitle>Sand</PageTitle>
 
 <div class="MainDiv">
-  <PixelMap Width=500 Height=250 Scale=2 NextDelay=100 ClickDelay=5
+  <PixelMap Width=500 Height=250 Scale=2 NextDelay=100 ClickDelay=10
   @ref="matrix" OnMouseDownCallback="ClickDown" OnMouseUpCallback="ClickUp" OnMouseMoveCallback="Move"/>
 </div>
 
@@ -75,14 +75,16 @@
   }
 
   private void ClickDown(MouseEventArgs args) {
+    matrix.mouseArgsList.Add(args);
     matrix.isClicking = true;
   }
 
   private void ClickUp(MouseEventArgs args) {
     matrix.isClicking = false;
+    matrix.mouseArgsList.Clear();
   }
 
   private void Move(MouseEventArgs args) {
-    matrix.mouseArgs = args;
+    if (matrix.isClicking) matrix.mouseArgsList.Add(args);
   }
 }
