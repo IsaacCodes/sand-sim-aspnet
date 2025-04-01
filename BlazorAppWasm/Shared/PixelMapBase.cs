@@ -26,14 +26,16 @@ public class PixelMapBase : ComponentBase {
   public EventCallback<MouseEventArgs> OnMouseUpCallback { get; set; }
   [Parameter]
   public EventCallback<MouseEventArgs> OnMouseMoveCallback { get; set; }
+  [Parameter]
+  public EventCallback<MouseEventArgs> OnMouseLeaveCallback { get; set; }
 
   public string Source { get; set; }
 
   public bool isClicking = false;
-  public bool gravity = true;
+  public bool isFrozen = false;
   public int gravityDirection = 1;
   public int clickRadius = 3;
-  public int particle = 1;
+  public int currentParticle = 1;
   public List<MouseEventArgs> mouseArgsList = new List<MouseEventArgs>();
 
   private SKBitmap bitmap;
@@ -101,7 +103,7 @@ public class PixelMapBase : ComponentBase {
   public async Task Generate() {
 
     SKColor bg = pColors[(int) Particle.bg];
-    SKColor fill = pColors[particle];
+    SKColor fill = pColors[currentParticle];
 
     for(int x = 0; x < Width; x++) {
       for(int y = 0; y < Height; y++) {
@@ -140,7 +142,7 @@ public class PixelMapBase : ComponentBase {
   //Generates the next bitmap state as particles undergo gravity
   private async Task NextBitmap() {
 
-    if (!gravity) {
+    if (isFrozen) {
       await Update();
       return;
     }
@@ -178,28 +180,56 @@ public class PixelMapBase : ComponentBase {
 
           if ((preferLeft || !canRight) && canLeft) {
             bitmap.SetPixel(x, y, bg);
-            bitmap.SetPixel(x-1, y+gravityDirection, here);
+            bitmap.SetPixel(x-1, y+gravityDirection, sand);
           } 
           else if (canRight) {
             bitmap.SetPixel(x, y, bg);
-            bitmap.SetPixel(x+1, y+gravityDirection, here);
+            bitmap.SetPixel(x+1, y+gravityDirection, sand);
           }
         }
 
         else if (here == water) {
 
-          //Commented code is broken :(
           /* 
-          int waterStart = x;
-          HashSet<int> positions = new HashSet<int>();
-
-          while(0 < x && x < Width-1 && bitmap.GetPixel(x+1, y) == water && bitmap.GetPixel(x+1, y+gravityDirection) != bg) {
+          // Doesn't work atm :(
+          // Left side is zoomy and right side acts like sand (tho right could be fixed pretty easily prob)
+          // Main issue seems like gravity moving on the left causes changes that screw with water spans
+          int sX = x;
+          while(x+1 < Width && bitmap.GetPixel(x+1, y) == water && bitmap.GetPixel(x+1, y+gravityDirection) != bg) {
             x++;
           }
-          Console.WriteLine(x.ToString() + y.ToString());
 
-          positions.Add(waterStart);
-          positions.Add(x);
+
+          bool canLeft = false, continueLeft = true;
+          int dxL = 0;
+
+          while (!canLeft && continueLeft) {
+            dxL++;
+
+            if (continueLeft = 0 <= sX-dxL && sX-dxL < Width && bitmap.GetPixel(sX-dxL+1, y+gravityDirection) == water) {
+              canLeft = bitmap.GetPixel(sX-dxL, y+gravityDirection) == bg;
+            }
+          }
+
+          bool canRight = false, continueRight = true;
+          int dxR = 0;
+
+          while (!canRight && continueRight) {
+            dxR++;
+
+            if (continueRight = 0 <= x+dxR && x+dxR < Width && bitmap.GetPixel(x+dxR-1, y+gravityDirection) == water) {
+              canRight = bitmap.GetPixel(x+dxR, y+gravityDirection) == bg;
+            }
+          }
+
+          if (canLeft) {
+            bitmap.SetPixel(sX, y, bg);
+            bitmap.SetPixel(sX-dxL, y+gravityDirection, water);
+          }
+          if (canRight) {
+            bitmap.SetPixel(x, y, bg);
+            bitmap.SetPixel(x+dxR, y+gravityDirection, water);
+          }
           */
 
           bool preferLeft = random.Next(0, 2) == 0;
@@ -249,7 +279,7 @@ public class PixelMapBase : ComponentBase {
       float x = (float) Math.Round(mouseArgs.OffsetX/Scale);
       float y = (float) Math.Round(mouseArgs.OffsetY/Scale);
 
-      SKPaint paint = mouseArgs.ShiftKey ? pPaints[(int) Particle.bg] : pPaints[particle];
+      SKPaint paint = mouseArgs.ShiftKey ? pPaints[(int) Particle.bg] : pPaints[currentParticle];
       paint.StrokeWidth = 2*clickRadius;
 
       canvas.DrawLine(startX, startY, x, y, paint);

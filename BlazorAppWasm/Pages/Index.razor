@@ -4,7 +4,7 @@
 
 <div class="MainDiv">
   <PixelMap Width=500 Height=250 Scale=2 NextDelay=100 ClickDelay=10
-  @ref="matrix" OnMouseDownCallback="ClickDown" OnMouseUpCallback="ClickUp" OnMouseMoveCallback="Move"/>
+  @ref="matrix" OnMouseDownCallback="ClickDown" OnMouseUpCallback="ClickUp" OnMouseMoveCallback="Move" OnMouseLeaveCallback="ClickUp"/>
 </div>
 
 <div class="InfoBar">
@@ -49,7 +49,7 @@
   }
 
   private void Freeze() {
-    matrix.gravity = !matrix.gravity;
+    matrix.isFrozen = !matrix.isFrozen;
   }
 
 
@@ -66,8 +66,8 @@
     radiusText = $"Radius: {matrix.clickRadius}";
   }
 
-  private void SetParticle(int type) {
-    matrix.particle = type;
+  private void SetParticle(int particleNum) {
+    matrix.currentParticle = particleNum;
   }
 
   private void ClearParticle(int type) {
@@ -79,6 +79,7 @@
     matrix.isClicking = true;
   }
 
+  //Consider implementing onmouseleave to act as ClickUp
   private void ClickUp(MouseEventArgs args) {
     matrix.isClicking = false;
     matrix.mouseArgsList.Clear();
